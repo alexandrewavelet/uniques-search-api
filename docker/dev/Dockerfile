@@ -24,7 +24,12 @@ RUN apt-get update \
 
 WORKDIR /app
 
-COPY --link --chmod=755 docker-entrypoint.sh /usr/local/bin/docker-entrypoint
+COPY --link docker-entrypoint.sh /usr/local/bin/docker-entrypoint
+# Windows checkouts often land CRLF; a CRLF shebang breaks exec on Linux. Strip CR and
+# set the exec bit. (The repo .gitattributes `*.sh eol=lf` is the primary defense; this
+# is belt-and-suspenders so the build is robust regardless of how the file arrived.)
+RUN sed -i 's/\r$//' /usr/local/bin/docker-entrypoint \
+ && chmod 755 /usr/local/bin/docker-entrypoint
 
 ENTRYPOINT ["docker-entrypoint"]
 
